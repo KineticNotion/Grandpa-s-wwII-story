@@ -159,6 +159,10 @@
                 <h1 class="text-xl md:text-3xl tracking-wider text-[#d4c5a3] uppercase">Operation: Grandfather</h1>
                 <p class="text-[10px] md:text-xs text-gray-400 typewriter">135th Evacuation Hospital // 1943-1946</p>
             </div>
+            <button onclick="switchTab('story')"
+                class="ml-4 bg-[#d4c5a3] hover:bg-white text-black text-xs font-bold px-3 py-1 rounded uppercase tracking-widest transition-colors shadow-md hidden md:block">
+                Watch Film
+            </button>
         </div>
 
         <!-- Service Record Summary -->
@@ -186,19 +190,22 @@
 
         <!-- Sidebar (Dossier) -->
         <div class="w-full md:w-[450px] flex flex-col z-30 shadow-2xl relative h-full bg-[#2b2b2b]">
-            <div class="h-10 bg-[#2b2b2b] flex items-end px-2 flex-shrink-0 gap-1">
+            <div class="h-12 bg-[#2b2b2b] flex items-end px-2 flex-shrink-0 gap-1 pt-2">
                 <button id="tab-mission" onclick="switchTab('mission')"
-                    class="bg-[#d4c5a3] text-[#3f3f3f] rounded-t-lg px-4 py-2 text-xs font-bold uppercase tracking-widest shadow-md transition-all flex-1">Mission
+                    class="bg-[#d4c5a3] text-[#3f3f3f] rounded-t-lg h-full flex items-center justify-center text-xs font-bold uppercase tracking-widest shadow-md transition-all flex-1">Mission
                     Log</button>
                 <button id="tab-archives" onclick="switchTab('archives')"
-                    class="bg-[#1a1a1a] text-gray-500 rounded-t-lg px-4 py-2 text-xs font-bold uppercase tracking-widest shadow-inner hover:bg-[#222] transition-all flex-1">Field
+                    class="bg-[#1a1a1a] text-gray-500 rounded-t-lg h-full flex items-center justify-center text-xs font-bold uppercase tracking-widest shadow-inner hover:bg-[#222] transition-all flex-1">Field
                     Archives</button>
+                <button id="tab-story" onclick="switchTab('story')"
+                    class="bg-[#1a1a1a] text-gray-500 rounded-t-lg h-full flex items-center justify-center text-xs font-bold uppercase tracking-widest shadow-inner hover:bg-[#222] transition-all flex-1">The
+                    Story</button>
             </div>
 
             <div class="flex-grow paper-bg overflow-y-auto p-6 flex flex-col relative shadow-inner">
 
                 <!-- MISSION LOG CONTENT -->
-                <div id="mission-log-content">
+                <div id="mission-content">
                     <!-- Controls -->
                     <div class="flex justify-between items-center mb-6 border-b-2 border-gray-300 pb-4 flex-shrink-0">
                         <button id="btn-prev"
@@ -230,6 +237,23 @@
                     </div>
                     <div id="archives-grid" class="grid grid-cols-2 gap-4">
                         <!-- Archives injected here -->
+                    </div>
+                </div>
+
+                <!-- STORY CONTENT -->
+                <div id="story-content" class="hidden h-full flex flex-col">
+                    <div class="text-center mb-4 flex-shrink-0">
+                        <h2 class="text-2xl font-bold stamp-font text-[#8b0000] mb-1">THE STORY</h2>
+                        <p class="text-xs text-gray-600 typewriter">A Soldier's WWII Story</p>
+                    </div>
+                    <div class="flex-grow bg-black rounded shadow-lg overflow-hidden border-4 border-gray-800 relative">
+                        <video id="story-video" class="w-full h-full object-contain" controls>
+                            <source src="A_Soldier_s_WWII_Story.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    <div class="mt-4 text-xs text-gray-600 typewriter text-center">
+                        <p>"War is hell, but the stories live forever."</p>
                     </div>
                 </div>
 
@@ -689,7 +713,7 @@
             activeMissionIndex = missionIndex;
             activeDocIndex = docIndex;
             modal.style.display = "flex";
-            showImageMode();
+            showTextMode();
             updateModalContent();
         }
 
@@ -856,29 +880,33 @@
 
         // --- TABS LOGIC ---
         function switchTab(tab) {
-            const missionContent = document.getElementById('mission-log-content');
-            const archivesContent = document.getElementById('archives-content');
-            const tabMission = document.getElementById('tab-mission');
-            const tabArchives = document.getElementById('tab-archives');
+            // Reset Tabs
+            ['mission', 'archives', 'story'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const content = document.getElementById(`${t}-content`);
 
-            if (tab === 'mission') {
-                missionContent.classList.remove('hidden');
-                archivesContent.classList.add('hidden');
+                if (t === tab) {
+                    // Active
+                    btn.classList.remove('bg-[#1a1a1a]', 'text-gray-500', 'shadow-inner');
+                    btn.classList.add('bg-[#d4c5a3]', 'text-[#3f3f3f]', 'shadow-md');
+                    content.classList.remove('hidden');
+                } else {
+                    // Inactive
+                    btn.classList.add('bg-[#1a1a1a]', 'text-gray-500', 'shadow-inner');
+                    btn.classList.remove('bg-[#d4c5a3]', 'text-[#3f3f3f]', 'shadow-md');
+                    content.classList.add('hidden');
+                }
+            });
 
-                tabMission.classList.remove('bg-[#1a1a1a]', 'text-gray-500', 'shadow-inner');
-                tabMission.classList.add('bg-[#d4c5a3]', 'text-[#3f3f3f]', 'shadow-md');
+            // Video Logic
+            const video = document.getElementById('story-video');
+            if (tab !== 'story' && video) {
+                video.pause();
+            }
 
-                tabArchives.classList.add('bg-[#1a1a1a]', 'text-gray-500', 'shadow-inner');
-                tabArchives.classList.remove('bg-[#d4c5a3]', 'text-[#3f3f3f]', 'shadow-md');
-            } else {
-                missionContent.classList.add('hidden');
-                archivesContent.classList.remove('hidden');
-
-                tabMission.classList.add('bg-[#1a1a1a]', 'text-gray-500', 'shadow-inner');
-                tabMission.classList.remove('bg-[#d4c5a3]', 'text-[#3f3f3f]', 'shadow-md');
-
-                tabArchives.classList.remove('bg-[#1a1a1a]', 'text-gray-500', 'shadow-inner');
-                tabArchives.classList.add('bg-[#d4c5a3]', 'text-[#3f3f3f]', 'shadow-md');
+            // Special handling for Archives
+            if (tab === 'archives') {
+                populateArchives(); // Assuming populateArchives is the function to render archives
             }
         }
 
