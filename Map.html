@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operation: Grandfather - Interactive Dossier</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Special+Elite&family=Inter:wght@400;600;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* --- CORE STYLES --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a;
+            color: #e5e5e5;
+            overflow: hidden;
+        }
+
+        h1,
+        h2,
+        .stamp-font {
+            font-family: 'Special Elite', cursive;
+        }
+
+        .typewriter {
+            font-family: 'Courier Prime', monospace;
+        }
+
+        /* --- MAP STYLES --- */
+        #map {
+            height: 100%;
+            width: 100%;
+            z-index: 1;
+            filter: sepia(20%) contrast(110%) grayscale(10%);
+            background: #242424;
+        }
+
+        /* --- UI COMPONENTS --- */
+        .paper-bg {
+            background-color: #f4f1ea;
+            color: #2c2c2c;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+        }
+
+        .marker-icon {
+            background-color: #b91c1c;
+            border: 2px solid white;
+            border-radius: 50%;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            line-height: 28px;
+            box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+            transition: all 0.2s ease;
+        }
+
+        .marker-icon:hover {
+            transform: scale(1.2);
+            background-color: #ef4444;
+            z-index: 100;
+        }
+
+        .marker-icon.active {
+            background-color: #fbbf24;
+            color: #000;
+            border-color: #000;
+            transform: scale(1.3);
+        }
+
+        /* --- INTEL BOX --- */
+        .intel-box {
+            background-color: #e0e7ff;
+            border-left: 4px solid #3730a3;
+        }
+
+        /* --- MODAL (IMAGE VIEWER) --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 85vh;
+            border: 2px solid #555;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            background: #111;
+        }
+
+        .modal-content img {
+            max-width: 100%;
+            max-height: 80vh;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .close-btn:hover {
+            color: #ff4444;
+        }
+
+        #modalCaption {
+            border-top: 1px solid #333;
+        }
+
+        /* --- SCROLLBAR --- */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #e1ded5;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #a8a293;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col h-screen">
+
+    <!-- Header -->
+    <header
+        class="bg-[#111] text-white p-3 border-b-4 border-[#8b0000] shadow-lg flex justify-between items-center z-20 relative flex-shrink-0">
+        <div class="flex items-center gap-4">
+            <div
+                class="bg-red-800 text-xs font-bold px-2 py-1 rounded text-white tracking-widest uppercase shadow-inner">
+                Confidential</div>
+            <div>
+                <h1 class="text-xl md:text-3xl tracking-wider text-[#d4c5a3] uppercase">Operation: Grandfather</h1>
+                <p class="text-[10px] md:text-xs text-gray-400 typewriter">135th Evacuation Hospital // 1943-1946</p>
+            </div>
+        </div>
+
+        <!-- Service Record Summary -->
+        <div class="flex items-center gap-4">
+            <div id="service-record-trigger"
+                class="cursor-pointer group flex items-center gap-2 bg-gray-800 px-3 py-1 rounded border border-gray-600 hover:border-[#d4c5a3] transition-all">
+                <div class="text-right">
+                    <div class="text-[10px] text-gray-400 uppercase tracking-widest">Service Record</div>
+                    <div class="text-xs font-bold text-[#d4c5a3]"><span id="badge-count">0</span> / 6 Badges</div>
+                </div>
+                <div
+                    class="w-8 h-8 bg-[#d4c5a3] rounded-full flex items-center justify-center text-gray-900 font-bold border-2 border-[#8b0000] group-hover:scale-110 transition-transform">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <main class="flex-grow flex flex-col md:flex-row relative overflow-hidden">
+
+        <!-- Sidebar (Dossier) -->
+        <div class="w-full md:w-[450px] flex flex-col z-30 shadow-2xl relative h-full bg-[#2b2b2b]">
+            <div class="h-10 bg-[#2b2b2b] flex items-end px-2 flex-shrink-0 gap-1">
+                <button id="tab-mission" onclick="switchTab('mission')"
+                    class="bg-[#d4c5a3] text-[#3f3f3f] rounded-t-lg px-4 py-2 text-xs font-bold uppercase tracking-widest shadow-md transition-all flex-1">Mission
+                    Log</button>
+                <button id="tab-archives" onclick="switchTab('archives')"
+                    class="bg-[#1a1a1a] text-gray-500 rounded-t-lg px-4 py-2 text-xs font-bold uppercase tracking-widest shadow-inner hover:bg-[#222] transition-all flex-1">Field
+                    Archives</button>
+            </div>
+
+            <div class="flex-grow paper-bg overflow-y-auto p-6 flex flex-col relative shadow-inner">
+
+                <!-- MISSION LOG CONTENT -->
+                <div id="mission-log-content">
+                    <!-- Controls -->
+                    <div class="flex justify-between items-center mb-6 border-b-2 border-gray-300 pb-4 flex-shrink-0">
+                        <button id="btn-prev"
+                            class="bg-gray-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shadow">PREV</button>
+                        <div class="text-center">
+                            <span id="step-counter" class="text-2xl font-bold stamp-font text-red-800">1 / 13</span>
+                            <div class="text-[10px] text-gray-500 uppercase tracking-wider">Mission Step</div>
+                        </div>
+                        <button id="btn-next"
+                            class="bg-red-800 text-white px-4 py-2 rounded text-sm font-bold hover:bg-red-900 transition-colors shadow-md border border-red-900">NEXT
+                            &rarr;</button>
+                    </div>
+
+                    <!-- Dynamic Content -->
+                    <div id="content-display" class="flex-grow"></div>
+
+                    <div class="mt-4 pt-4 border-t border-gray-300 text-center flex-shrink-0">
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest typewriter opacity-60">
+                            Declassified
+                            for Educational Use</p>
+                    </div>
+                </div>
+
+                <!-- ARCHIVES CONTENT -->
+                <div id="archives-content" class="hidden">
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl font-bold stamp-font text-[#8b0000] mb-1">FIELD ARCHIVES</h2>
+                        <p class="text-xs text-gray-600 typewriter">Complete collection of recovered documents.</p>
+                    </div>
+                    <div id="archives-grid" class="grid grid-cols-2 gap-4">
+                        <!-- Archives injected here -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Map -->
+        <div class="flex-grow relative bg-gray-800 h-full z-10">
+            <div id="map"></div>
+
+            <!-- Service Record Panel (Hidden by default) -->
+            <div id="service-record-panel"
+                class="absolute top-4 right-4 bg-[#f4f1ea] p-4 rounded shadow-2xl border-2 border-[#8b0000] z-[1000] w-64 hidden transform transition-all duration-300 origin-top-right">
+                <h3 class="font-bold text-lg text-[#8b0000] stamp-font border-b border-gray-400 mb-3 pb-1">SERVICE
+                    RECORD</h3>
+
+                <!-- Soldier Profile -->
+                <div class="flex items-center gap-3 mb-4 border-b border-gray-300 pb-3">
+                    <img src="imgs/IMG_1445.jpeg"
+                        class="w-16 h-16 rounded-full border-2 border-[#8b0000] object-cover shadow-sm" alt="Don Davis">
+                    <div>
+                        <div class="font-bold text-[#8b0000] stamp-font text-lg leading-none">DON DAVIS</div>
+                        <div class="text-xs text-gray-600 typewriter">135th Evacuation Hospital</div>
+                        <div class="text-[10px] text-gray-500 uppercase tracking-widest">Medic // Motor Pool</div>
+                    </div>
+                </div>
+
+                <div id="badges-container" class="grid grid-cols-3 gap-2">
+                    <!-- Badges injected here -->
+                </div>
+                <div class="mt-3 pt-2 border-t border-gray-300 text-[10px] text-center text-gray-500 typewriter">
+                    CLASSIFIED PERSONNEL FILE
+                </div>
+            </div>
+
+            <!-- Badge Unlock Notification -->
+            <div id="badge-notification"
+                class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#111] text-[#d4c5a3] p-6 rounded-lg shadow-2xl border-2 border-[#d4c5a3] z-[2000] hidden text-center">
+                <div class="text-4xl mb-2">🎖️</div>
+                <h3 class="text-xl font-bold uppercase tracking-widest mb-1">Badge Earned!</h3>
+                <div id="notification-text" class="text-sm typewriter text-white"></div>
+            </div>
+
+            <!-- Map Legend -->
+            <div
+                class="absolute bottom-6 right-6 bg-white/90 p-3 border border-gray-600 rounded shadow-lg z-[1000] text-xs hidden md:block">
+                <h4 class="font-bold border-b border-gray-400 mb-2 pb-1 text-gray-900">LEGEND</h4>
+                <div class="flex items-center mb-2">
+                    <div class="w-3 h-3 rounded-full bg-[#fbbf24] mr-2 border border-black shadow"></div>
+                    <span class="text-gray-800">Active Location</span>
+                </div>
+                <div class="flex items-center mb-1">
+                    <div class="w-6 h-1 bg-blue-700 mr-2"></div>
+                    <span class="text-gray-800">Deployment Route</span>
+                </div>
+                <div class="flex items-center mb-1">
+                    <div class="w-6 h-1 bg-green-700 dashed border-b border-green-700 mr-2"
+                        style="border-style: dashed;"></div>
+                    <span class="text-gray-800">Supply Run</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-6 h-1 bg-red-700 mr-2"></div>
+                    <span class="text-gray-800">Return Home</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Image Modal -->
+    <div id="journalModal" class="modal">
+        <span class="close-btn">&times;</span>
+        <div class="modal-content flex flex-col h-full max-h-[85vh]">
+            <!-- Toolbar -->
+            <div class="bg-gray-900 p-2 flex justify-end border-b border-gray-700">
+                <button id="modalToggle"
+                    class="bg-gray-700 text-white text-xs px-3 py-1 rounded hover:bg-gray-600 transition-colors font-bold tracking-wider">READ
+                    TRANSCRIPTION</button>
+            </div>
+
+            <!-- Content Container -->
+            <div class="relative flex-grow overflow-hidden bg-[#111] flex items-center justify-center group">
+                <!-- Prev Button -->
+                <button id="modal-prev"
+                    class="absolute left-4 z-20 bg-black/50 text-white p-3 rounded-full hover:bg-red-800 transition-colors hidden">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7">
+                        </path>
+                    </svg>
+                </button>
+
+                <img id="modalImage" src="" alt="Journal Page" class="max-h-full max-w-full object-contain z-10">
+
+                <div id="modalText"
+                    class="hidden absolute inset-0 bg-[#f4f1ea] text-gray-900 p-8 overflow-y-auto text-left z-10">
+                    <div class="max-w-2xl mx-auto">
+                        <h3 class="font-bold text-xl mb-4 stamp-font text-red-800 border-b-2 border-red-800 pb-2">
+                            TRANSCRIPTION</h3>
+                        <p class="typewriter text-lg leading-relaxed whitespace-pre-wrap"></p>
+                    </div>
+                </div>
+
+                <!-- Next Button -->
+                <button id="modal-next"
+                    class="absolute right-4 z-20 bg-black/50 text-white p-3 rounded-full hover:bg-red-800 transition-colors hidden">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div id="modalCaption"
+                class="bg-black text-white text-xs p-3 text-center typewriter border-t border-gray-700 flex-shrink-0">
+                ARCHIVED DOCUMENT
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script>
+        // --- DATA ---
+        // Updated to use the exact file names from your upload: IMG_0531.jpeg to IMG_0540.jpeg
+        // --- JOURNAL REGISTRY (Master List of Documents) ---
+        const journalRegistry = [
+            { id: "IMG_0524", src: "imgs/IMG_0524.jpeg", text: "I was inducted into the Army the 7th of October 1943 in Los Angeles, CA. I reported to Fort MacArthur on the 23rd of October 1943. We were given a quick rundown of Army routine and issued our uniforms, given short haircuts, and several shots were administered. Some recruits passed out when they saw the needle. Of course, there were stories circulated about big square needles. I can't recall what shots they were, but our arms were quite swollen for several days. They gave us a preview of getting up quickly in the early morning, by blowing a bugle. You were to be outside in formation in 10 minutes. Your name was called and you answered Present And Accounted For. The Sergeant asked those in line who would be interested in Police Work to take one step forward. Quite a few thinking that would be a good thing to be in. The Sergeant then said all others line up for breakfast and the Police volunteers would Police the area. After they finished they could go to breakfast. It was a lesson not to volunteer if you didn't know what you were volunteering for." },
+            { id: "IMG_0525", src: "imgs/IMG_0525.jpeg", text: "After about a week, we were loaded on a train to go to Basic Training. None of us recruits had any idea where we were headed. We went north for a while, then we went over the Sierra Nevada Mts. It was a beautiful ride. After a two-day ride we disembarked at Abilene, Texas. We were taken by trucks to a camp called, Camp Barkeley. As we arrived we looked at our nest homes. They were Tar Paper Barracks. The floors were planks and had cracks between the boards. We were told that these barracks were to be clean at all times. Not knowing Texas weather, it didn't sound too hard to do. They showed us how the Army wanted us to keep our footlockers. Footlockers are where you keep your underwear, your socks, shaving gear, and all your personal effects. Your shoes were to shine like a new penny. The barracks were to be kept so clean that if the Captain inspected and in wiping with white gloves got them dirty, the whole Platoon would be restricted and no weekend passes would be issued. No one wanted to be guilty of restricting all. There was a lot of soap and water used for Q'ing (cleaning) the barracks. After cleaning, then you hoped that the wind wouldn't blow, as the sand would blow up through the cracks in the floor. The inspection would happen after breakfast. They have a saying in Texas, \"if you don't like the weather wait 5 minutes and it will change,\" this was so true." },
+            { id: "IMG_0526", src: "imgs/IMG_0526.jpeg", text: "Basic Training lasted for 12 weeks. We had quite a lot of class work - learning map reading, compass training, Army etiquette (Yes Sir - No Sir), proper way to salute a superior, basic first aid, etc. We were assigned specific chores, working KP (Kitchen Patrol), Guard Duty. Also, we did daily marches with Galoshes. We made marches with full backpacks. We carried half a tent in our backpack and at night you pitched tent with another fellow, and you both have your tent halves. We also did night problems where you would be in a trench and you had to come out of the trench and creep and crawl across a field and they would fire live ammunition over the top of you. You learned soon how to keep down. It was a rainy night when we did this; the trench had about a foot of water in it, so it was real messy to creep and crawl. There was a young fellow who said He Couldn't Do This. He was told He Had To Do It so \"get with it.\" Well, no sooner than he got out of the trench, he had an Epileptic Fit. They had to stop the guns and get a litter and carried him off the range. We never saw him again, so I guess he received a Medical Discharge." },
+            { id: "IMG_0527", src: "imgs/IMG_0527.jpeg", text: "We had to take an Equivalency Test so they could reassign you to Officers Training or Medical Training at an Army Hospital. I scored 115 points and was given a choice of doing either training. I was getting a little Army smart and chose the medical training. While in basic training I took up smoking as each hour they would take a five-minute break and would say, \"All light up that wants to.\" I thought why not join with everyone as they all seemed to enjoy the break. This bad habit lasted about 45 years and became so very hard to stop.\n\nFinally the day arrived and I was called to go to Springfield, MO, to O'Reilly General Hospital. We were assigned to nice white barracks there, so much nicer than the Tar Paper ones in Camp Barkeley. We were told that we would go to classes and also work in the Wards at the hospital. I did good in all the classes except Ceph in Materia Medica. This involved the use of mathematics, where you also had to know about grams, and also problems that needed a Chemistry background. I never took Chemistry in High school. I was exceptionally good at bandaging, and after the class graduated and was to be assigned as a Unit, I and another fellow didn't get assigned, as they wanted us to stay a little longer and I was to teach field bandaging. I can't remember what Paul Wiehe was to teach." },
+            { id: "IMG_0528", src: "imgs/IMG_0528.jpeg", text: "I stayed at O'Reilly another month and a half. Then I was sent back to Barkeley for reassignment. I was then reunited with a fellow from San Diego, his name was Sweeney. He had been a Pharmaceutical Salesman in civilian life. In Basic Training he had suffered a groin rupture and was just recovering as I returned to Barkeley. I was soon on another train headed West. I was on my way to Camp Beale in California. It was located near Marysville, CA. This was what they called a POC which meant you were going overseas. After a short time there, assignments were being made. They called 99 of us as a unit and instead of going overseas, we were to be sent back to Camp Gruber in Oklahoma to form a Field Evacuation Hospital." },
+            { id: "IMG_0529", src: "imgs/IMG_0529.jpeg", text: "We again had to attend more classes and become a cohesive unit. We became the 135th Evacuation Hospital. The Cadre in our unit was a bunch of Infantry rejects; they all had stripes on their uniforms. After all the training some of us had, there was no way to upgrade our ranks and earn more pay. The worst part was, they were to do all the teaching. I fell asleep in a class on bandaging, and the Sergeant had a fellow next to me wake me up. He said, \"I suppose you know all about this subject.\" I said \"Yes Sir, and could do that without a bandage, blindfolded.\" Without what, he had me come up front, blindfold me, and said \"Go ahead.\" I did the bandage, and after class I ran to report him to the Captain's office." },
+            { id: "IMG_0530", src: "imgs/IMG_0530.jpeg", text: "The First Sergeant wasn't going to let me talk to the Captain, as he was a friend of the fellow teaching the class. Well, in the meantime the class instructor came in, and there was some loud exclamation made. The Captain came to the door to see what was happening. He told the First Sergeant to cool down, and he asked me to come into his office. I explained what happened and I told him I would like a transfer to another unit. He said he couldn't do that but I could transfer to the Motor Pool if I wanted, and I wouldn't have to attend any more classes. I readily agreed and I really liked Sergeant Garcia who ran the Motor Pool. He made me the Motor Pool Dispatcher." },
+            { id: "IMG_0531", src: "imgs/IMG_0531.jpeg", text: "Soon after we were on the train and we found our destination to be Fort Dix near New Brunswick, New Jersey. After a couple of days there we were taken to New York and boarded a ship headed for Europe. We didn't know it but we were in a 99-boat Convoy headed for France, finally going to the War Zone. We departed New York the 23rd of March. It was interesting looking either direction to see boats, all in a row, as far as you could see. Each day we practiced drills, in case there would be an emergency. We were to come to the deck for instructions. The ship was three decks deep in the vessel. Many people on the boat were sea sick. It was estimated by sick bay about 60% of personnel were up chucking." },
+            { id: "IMG_0532", src: "imgs/IMG_0532.jpeg", text: "On about the 5th night around 10 pm I was laying on my bunk when there was a grinding sound. The boat kind of lurched. I thought like we had struck a sand bar and it was moving back and forth trying to dislodge itself. Then the emergency bells and lights came on and we were to go to the deck. Several fellows completely lost it. A big fellow from Oklahoma came running and flailing his arms. We ran over quite a few people and really messed up the evacuation drill. I and a fellow named Dean decided there was no way to try to get out, and that we would just wait and go out when things quieted down. What happened was not a torpedo, but the night was quite foggy, and the boat to our right mistook a blinker signal and turned, and came right in front of us. We hit them right in the middle of their boat. It hit them right in the Crew Quarters. We heard it killed seven of their crew. The scraping sound we heard was our boat trying to dislodge from them. Their cargo was Hi-Octane Gasoline. If we had hit them 10 ft either way we all would have been blown out of the water. The next morning the Captain said we did so good in the emergency drill that we wouldn't have to practice anymore. I figured the drill was a complete flop, and that we were so fortunate to be alive." },
+            { id: "IMG_0533", src: "imgs/IMG_0533.jpeg", text: "Our ship was to go to Southampton, England, for repairs. We arrived in Southampton April 6 and was transferred to an English (Luny Boat) to go across the English Channel to France. We landed on the coast near Normandy Beach. We were assigned to Camp Lucky Strike, a Tent Camp, near Rouen, France. We never got our tents put up then we were told to pack up, and that we were now in the Second Army and that we were going to catch up to Patton's Army on his drive through France and into Germany. We went through the Maginot Line and into Germany through Aachen. The City of Aachen was a completely bombed out place. I don't believe that a single building downtown had four outside walls standing. We hurried through as we were trying to catch Patton. We passed a number of villages with no sign of warfare. Finally we reached Cologne, only to see it completely devastated. At this point we received orders to go to a town called Hambourne and set up our Hospital there. We arrived there and took over their hospital and all of the houses adjacent to the hospital to house our troops." },
+            { id: "IMG_0534", src: "imgs/IMG_0534.jpeg", text: "The Motor Pool took over a large garage and had a lot of room for our vehicles. We all learned a few words in German. We would exchange food and candy bars for schnapps. Schnapps is a very fine white wine. We also were able to trade for things like cameras, binoculars, etc." },
+            { id: "IMG_0535", src: "imgs/IMG_0535.jpeg", text: "While in Hambourne, the Supply Lieutenant, Lt. Intrater was going to make a trip to several Supply Depots. Being I was the Motor Pool Dispatcher, I chose to drive him. A Sergeant from the Supply room was to go along. Our first stop was in Paris. We visited a wine cellar under the street. The wine bottles were stored on shelves that could be rotated. It took years for the wine to complete the circle in the aging process. After touring the wine cellar we came up into a large foyer, and they had us sample the wine. It was a white or clear as water wine and was very good." },
+            { id: "IMG_0536", src: "imgs/IMG_0536.jpeg", text: "After leaving Paris we went South to Lyon, St. It was a beautiful city. We went to a supply depot several miles out in the country. Lt. Intrater got both a Sergeant Golden and myself an Eisenhower jacket. To make a long story short, we had a lot of fun and the trip took 11 days to go where the Lt. had business." },
+            { id: "IMG_0537", src: "imgs/IMG_0537.jpeg", text: "When we got back to Hambourne, the War in Europe was coming to a close. Shortly after we were ordered to go to a Camp near Marseille. It was called an R & R Camp, and was in the desert. R & R really means Rest & Recuperation. I really think they wanted us close to a port so we could be sent to the Pacific Area. After several weeks we received orders to load on a ship going to the Orient for occupation duty. An Armistice brought the war in Europe to the end. Now the problem was to bring our servicemen home to be discharged. A point system was devised to send the men who had been in the European area the longest to be first to go home. It so happened that we had been first loaded in our boat, then it was decided to load the highest point men on our boat and to send this boat to the U.S.A. They decided to leave us as they didn't want to unload our equipment." },
+            { id: "IMG_0538", src: "imgs/IMG_0538.jpeg", text: "We left France on the 17th of August and for some reason after leaving the Mediterranean we went north to cross the Atlantic by the North Atlantic route. We ran into a big storm and I just want to say I never believed waves could be so large. I'm sure that waves were 50 or more feet in height. We were tossed about like a leaf by those huge waves. We were told to stay below but, I just had to have a look. One look is all I wanted so I never forget that ocean." },
+            { id: "IMG_0539", src: "imgs/IMG_0539.jpeg", text: "We arrived in New York on Aug. 27, 1945. Again we were sent to Fort Dix in New Jersey. We spent some time there and finally put on a train to go to California. Due to heavy rail traffic we spent 7 days crossing good old U.S.A. We arrived at Fort MacArthur Feb. 28, 1946." },
+            { id: "IMG_0540", src: "imgs/IMG_0540.jpeg", text: "After a period of time I was discharged on March 31, 1946. My total service time was 2 years, 3 mos, and 28 days. I received 4 medals and a lot of valuable experience as a soldier." }
+        ];
+
+        const missionData = [
+            {
+                id: 1,
+                title: "Induction & Basic Training",
+                date: "Oct 1943 - Mar 1944",
+                coords: [32.4487, -99.7331],
+                zoom: 5,
+                docIds: ["IMG_0524", "IMG_0525", "IMG_0526"],
+                quote: "We arrived at Camp Barkeley. They were 'Tar Paper Barracks'... We did night problems where you would be in a trench... and crawl across a field and they would fire live ammunition over the top of you.",
+                intel: "<strong>Field Intel:</strong> 'Basic Training' teaches soldiers survival. The 'live fire' drill forces recruits to stay low. Tar paper barracks were cheap, temporary housing built quickly for the war effort.",
+                secret: {
+                    title: "The Police Work Trap",
+                    text: "At induction, the Sergeant asked for volunteers for 'Police Work'. Thinking it was a special duty, many stepped forward. It turned out 'Police Work' meant cleaning up the area! Lesson learned: Never volunteer if you don't know what it is."
+                }
+            },
+            {
+                id: 2,
+                title: "Medical Training",
+                date: "Spring 1944",
+                coords: [37.2089, -93.2923],
+                zoom: 6,
+                docIds: ["IMG_0527"],
+                quote: "I was called to go to Springfield, MO, to O'Reilly General Hospital... I was exceptionally good at bandaging... I was to teach field bandaging.",
+                intel: "<strong>Field Intel:</strong> O'Reilly General Hospital was a major Army hospital. 'Materia Medica' is the study of medicines. Scoring 115 on the aptitude test opened the door to specialized medical training.",
+                badge: { id: "medic", name: "Field Medic", icon: "⚕️", desc: "Completed Medical Training with Honors" }
+            },
+            {
+                id: 3,
+                title: "The Zig-Zag Journey",
+                date: "Summer 1944",
+                coords: [39.1141, -121.3447],
+                zoom: 5,
+                docIds: ["IMG_0528"],
+                quote: "I was soon on another train headed West... to Camp Beale in California... Then sent back to Camp Gruber in Oklahoma.",
+                intel: "<strong>Field Intel:</strong> Troop movements were often erratic. 'POC' meant preparation for overseas combat. The zig-zag across the country was typical of the logistical complexity of mobilizing millions of men."
+            },
+            {
+                id: 4,
+                title: "Unit Formation",
+                date: "Late 1944",
+                coords: [35.7126, -95.1766],
+                zoom: 6,
+                docIds: ["IMG_0529", "IMG_0530"],
+                quote: "We became the 135th Evacuation Hospital... I fell asleep in a class on bandaging... I said 'Yes Sir, and could do that without a bandage, blindfolded.'",
+                intel: "<strong>Field Intel:</strong> The 135th Evacuation Hospital was a mobile medical unit designed to move with the front lines. The 'blindfold' incident shows the tension between experienced soldiers and new officers.",
+                secret: {
+                    title: "The Blindfold Challenge",
+                    text: "Challenged by a Sergeant after falling asleep, Don proved his skill by bandaging a 'patient' while blindfolded. This bold move impressed the Captain but angered the Sergeant, leading to a transfer to the Motor Pool."
+                }
+            },
+            {
+                id: 5,
+                title: "Deployment to Europe",
+                date: "March 1945",
+                coords: [40.6023, -74.6168],
+                zoom: 5,
+                docIds: ["IMG_0531"],
+                quote: "We departed New York the 23rd of March... It was interesting looking either direction to see boats, all in a row, as far as you could see.",
+                intel: "<strong>Field Intel:</strong> Fort Dix was a major staging area. A '99-boat convoy' was a massive defensive formation to protect against German U-boats (submarines) while crossing the Atlantic.",
+                badge: { id: "atlantic", name: "Atlantic Voyager", icon: "🌊", desc: "Crossed the Atlantic in a Convoy" }
+            },
+            {
+                id: 6,
+                title: "The Collision at Sea",
+                date: "March 1945",
+                coords: [45.0, -30.0],
+                zoom: 4,
+                docIds: ["IMG_0532"],
+                quote: "The boat kind of lurched... We hit them right in the middle of their boat... Their cargo was Hi-Octane Gasoline. If we had hit them 10 ft either way we all would have been blown out of the water.",
+                intel: "<strong>Field Intel:</strong> Convoy collisions were a deadly risk, especially at night in fog. 'Hi-Octane Gasoline' is extremely explosive aviation fuel. This was a near-death experience before even reaching the war."
+            },
+            {
+                id: 7,
+                title: "Arrival in England",
+                date: "April 6, 1945",
+                coords: [50.9097, -1.4044],
+                zoom: 6,
+                docIds: ["IMG_0533"],
+                quote: "We arrived in Southampton April 6... transferred to an English (Luny Boat) to go across the English Channel to France.",
+                intel: "<strong>Field Intel:</strong> Southampton was a key port for the invasion of Europe. 'Luny Boat' likely refers to a small, uncomfortable channel ferry or landing craft."
+            },
+            {
+                id: 8,
+                title: "Camp Lucky Strike",
+                date: "April 1945",
+                coords: [49.8000, 0.7000],
+                zoom: 7,
+                docIds: ["IMG_0533"],
+                quote: "We were assigned to Camp Lucky Strike, a Tent Camp, near Rouen, France... We never got our tents put up then we were told to pack up.",
+                intel: "<strong>Field Intel:</strong> Camp Lucky Strike was one of the 'Cigarette Camps' used for staging troops. The rapid movement indicates the speed of the Allied advance into Germany."
+            },
+            {
+                id: 9,
+                title: "Into Germany",
+                date: "Spring 1945",
+                coords: [50.7753, 6.0839],
+                zoom: 7,
+                docIds: ["IMG_0533"],
+                quote: "We went through the Maginot Line... The City of Aachen was a completely bombed out place... We hurried through as we were trying to catch Patton.",
+                intel: "<strong>Field Intel:</strong> Aachen was the first German city captured by the Allies. The 'Maginot Line' was a French defensive line. Catching up to General Patton's Third Army meant moving very fast."
+            },
+            {
+                id: 10,
+                title: "Stationed in Hambourne",
+                date: "May 1945",
+                coords: [51.4900, 6.7500],
+                zoom: 8,
+                docIds: ["IMG_0533", "IMG_0534"],
+                quote: "We arrived there and took over their hospital... We would exchange food and candy bars for schnapps... cameras, binoculars, etc.",
+                intel: "<strong>Field Intel:</strong> 'Hambourne' (likely Hamborn/Duisburg area). Occupying enemy territory involved taking over local infrastructure. Bartering with 'candy bars' (cigarettes and chocolate) was the de facto economy.",
+                badge: { id: "occupation", name: "Occupation Force", icon: "🏰", desc: "Served in Occupied Germany" }
+            },
+            {
+                id: 11,
+                title: "Supply Run to Paris",
+                date: "May 1945",
+                coords: [48.8566, 2.3522],
+                zoom: 6,
+                docIds: ["IMG_0535"],
+                quote: "Our first stop was in Paris. We visited a wine cellar under the street... It took years for the wine to complete the circle in the aging process.",
+                intel: "<strong>Field Intel:</strong> A supply run was a coveted assignment. Visiting Paris just after liberation was a once-in-a-lifetime experience. The wine cellar technology impressed the young soldier."
+            },
+            {
+                id: 12,
+                title: "Journey to Lyon",
+                date: "May 1945",
+                coords: [45.7640, 4.8357],
+                zoom: 6,
+                docIds: ["IMG_0536"],
+                quote: "We went South to Lyon... Lt. Intrater got both a Sergeant Golden and myself an Eisenhower jacket... the trip took 11 days.",
+                intel: "<strong>Field Intel:</strong> The 'Eisenhower Jacket' (Ike Jacket) was a short, waist-length jacket fashionable among troops. An 11-day road trip through France was a brief respite from the harshness of duty.",
+                secret: {
+                    title: "The 11-Day Road Trip",
+                    text: "What started as a supply run turned into an 11-day adventure through France. Driving the Lieutenant meant better food, better quarters, and a chance to see the country away from the front lines."
+                }
+            },
+            {
+                id: 13,
+                title: "End of War & R&R",
+                date: "Summer 1945",
+                coords: [43.2965, 5.3698],
+                zoom: 7,
+                docIds: ["IMG_0537"],
+                quote: "The War in Europe was coming to a close... ordered to go to a Camp near Marseille... R & R really means Rest & Recuperation.",
+                intel: "<strong>Field Intel:</strong> Marseille was a staging area for redeployment to the Pacific. The 'Point System' determined who got to go home first based on time served and combat credits."
+            },
+            {
+                id: 14,
+                title: "The Stormy Return",
+                date: "August 1945",
+                coords: [42.0, -40.0],
+                zoom: 4,
+                docIds: ["IMG_0538"],
+                quote: "We ran into a big storm... I'm sure that waves were 50 or more feet in height. We were tossed about like a leaf.",
+                intel: "<strong>Field Intel:</strong> The North Atlantic route is notoriously rough. Surviving a massive storm on a troop transport was a terrifying final chapter to the overseas journey.",
+                badge: { id: "survivor", name: "Storm Survivor", icon: "⛈️", desc: "Braved the North Atlantic Storm" }
+            },
+            {
+                id: 15,
+                title: "Homecoming",
+                date: "Aug 27, 1945",
+                coords: [40.6023, -74.6168],
+                zoom: 5,
+                docIds: ["IMG_0539"],
+                quote: "We arrived in New York on Aug. 27, 1945... Due to heavy rail traffic we spent 7 days crossing good old U.S.A.",
+                intel: "<strong>Field Intel:</strong> The return of millions of soldiers overwhelmed the US transportation network. A 7-day train ride across the country was the victory lap."
+            },
+            {
+                id: 16,
+                title: "Discharge",
+                date: "March 31, 1946",
+                coords: [33.7139, -118.2937],
+                zoom: 8,
+                docIds: ["IMG_0540"],
+                quote: "I was discharged on March 31, 1946. My total service time was 2 years, 3 mos, and 28 days.",
+                intel: "<strong>Field Intel:</strong> Fort MacArthur (San Pedro, CA) was where it all began and ended. The 'Honorable Discharge' is the final milestone of service.",
+                badge: { id: "veteran", name: "WWII Veteran", icon: "🇺🇸", desc: "Honorably Discharged" }
+            }
+        ];
+
+        // --- APP STATE ---
+        let currentStep = 0;
+        let map;
+        let markers = [];
+
+        // --- INITIALIZATION ---
+        function initMap() {
+            map = L.map('map', { zoomControl: false }).setView([48.0, -15.0], 3);
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap, &copy; CARTO',
+                maxZoom: 19
+            }).addTo(map);
+
+            L.control.zoom({ position: 'topright' }).addTo(map);
+
+            drawPaths();
+            addMarkers();
+            loadStep(0);
+        }
+
+        // --- DRAWING ---
+        function drawPaths() {
+            const routeDeployment = [
+                missionData[0].coords, missionData[1].coords, missionData[2].coords, missionData[3].coords,
+                missionData[4].coords, missionData[5].coords, missionData[6].coords, missionData[7].coords,
+                missionData[8].coords, [50.9375, 6.9603], missionData[9].coords
+            ];
+            const routeSupply = [
+                missionData[9].coords, missionData[10].coords, missionData[11].coords, missionData[9].coords
+            ];
+            const routeReturn = [
+                missionData[12].coords, [36.0, -5.0], missionData[13].coords, missionData[14].coords
+            ];
+
+            L.polyline(routeDeployment, { color: '#1d4ed8', weight: 3, opacity: 0.7, dashArray: '8, 8' }).addTo(map);
+            L.polyline(routeSupply, { color: '#15803d', weight: 3, opacity: 0.7, dashArray: '4, 4' }).addTo(map);
+            L.polyline(routeReturn, { color: '#b91c1c', weight: 3, opacity: 0.7 }).addTo(map);
+        }
+
+        function addMarkers() {
+            missionData.forEach((step, index) => {
+                const icon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div class="marker-icon" id="marker-${index}" style="width: 30px; height: 30px; font-size: 14px; background-color: ${index >= 12 ? '#b91c1c' : '#1d4ed8'};">${index + 1}</div>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                });
+                const marker = L.marker(step.coords, { icon: icon }).addTo(map);
+                marker.on('click', () => {
+                    currentStep = index;
+                    loadStep(index);
+                });
+                markers.push(marker);
+            });
+        }
+
+        function loadStep(index) {
+            const data = missionData[index];
+            const container = document.getElementById('content-display');
+            const stepCounter = document.getElementById('step-counter');
+
+            // Update Active Marker
+            document.querySelectorAll('.marker-icon').forEach(el => el.classList.remove('active'));
+            const activeMarker = document.getElementById(`marker-${index}`);
+            if (activeMarker) activeMarker.classList.add('active');
+
+            stepCounter.innerText = `${index + 1} / ${missionData.length}`;
+
+            map.flyTo(data.coords, data.zoom, { animate: true, duration: 1.5 });
+
+            container.innerHTML = `
+                <div class="animate-in">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-1 stamp-font uppercase border-b border-gray-400 pb-2 leading-none">${data.title}</h2>
+                    <div class="text-xs font-bold text-gray-500 mb-4 typewriter">DATE: ${data.date}</div>
+                    
+                    <div class="mb-6 bg-white p-4 rounded shadow-sm border border-gray-300 relative">
+                        <div class="absolute -top-3 left-3 bg-gray-800 text-white text-[10px] px-2 py-1 rounded uppercase tracking-widest font-bold shadow">Journal Entry</div>
+                        
+                        <button onclick="openModal(${index})" class="absolute top-2 right-2 bg-gray-100 hover:bg-red-50 p-2 rounded-full transition-colors group border border-gray-300 shadow-sm" title="View Original Page">
+                            <svg class="w-5 h-5 text-gray-600 group-hover:text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </button>
+
+                        <p class="text-gray-800 typewriter text-sm leading-relaxed mt-2 pt-1 border-l-2 border-gray-300 pl-3">"${data.quote}"</p>
+                        
+                        ${data.secret ? `
+                        <div class="mt-4 pt-3 border-t border-gray-200">
+                            <button onclick="toggleSecret(${index})" class="w-full flex items-center justify-between bg-red-50 hover:bg-red-100 text-red-900 px-3 py-2 rounded border border-red-200 transition-colors group">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-lg">🕵️‍♂️</span>
+                                    <span class="text-xs font-bold uppercase tracking-wider">Secret Intel Found</span>
+                                </div>
+                                <svg class="w-4 h-4 transform group-hover:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+                            <div id="secret-${index}" class="hidden mt-2 bg-red-900 text-[#d4c5a3] p-3 rounded text-xs typewriter border border-red-950 shadow-inner">
+                                <strong class="block text-[#fbbf24] mb-1 uppercase border-b border-[#d4c5a3]/30 pb-1">${data.secret.title}</strong>
+                                ${data.secret.text}
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="intel-box p-4 rounded text-sm text-gray-800 shadow-sm">
+                        ${data.intel}
+                    </div>
+                </div>
+            `;
+
+            // Check for badge
+            if (data.badge) {
+                unlockBadge(data.badge);
+            }
+
+            document.getElementById('btn-prev').disabled = index === 0;
+            document.getElementById('btn-next').innerText = index === missionData.length - 1 ? "FINISH" : "NEXT MISSION";
+        }
+
+        // --- MODAL LOGIC ---
+        const modal = document.getElementById('journalModal');
+        const modalImg = document.getElementById('modalImage');
+        const modalText = document.getElementById('modalText');
+        const modalCap = document.getElementById('modalCaption');
+        const modalToggle = document.getElementById('modalToggle');
+        const btnPrev = document.getElementById('modal-prev');
+        const btnNext = document.getElementById('modal-next');
+
+        let activeMissionIndex = 0;
+        let activeDocIndex = 0;
+
+        // Open from Mission Log
+        window.openModal = function (missionIndex, docIndex = 0) {
+            activeMissionIndex = missionIndex;
+            activeDocIndex = docIndex;
+            modal.style.display = "flex";
+            showImageMode();
+            updateModalContent();
+        }
+
+        // Open from Archives (Finds the mission context or defaults)
+        window.openArchiveModal = function (docId) {
+            // Find which mission this doc belongs to (first match)
+            let mIndex = missionData.findIndex(m => m.docIds && m.docIds.includes(docId));
+            let dIndex = 0;
+
+            if (mIndex !== -1) {
+                dIndex = missionData[mIndex].docIds.indexOf(docId);
+            } else {
+                // Fallback if doc not assigned to a mission (shouldn't happen with current data)
+                mIndex = 0;
+                dIndex = 0;
+            }
+            openModal(mIndex, dIndex);
+        }
+
+        function updateModalContent() {
+            const mission = missionData[activeMissionIndex];
+            const docId = mission.docIds[activeDocIndex];
+            const doc = journalRegistry.find(d => d.id === docId);
+
+            if (!doc) return;
+
+            // Update Image
+            modalImg.src = doc.src;
+            modalImg.onerror = function () {
+                this.onerror = null;
+                this.src = "data:image/svg+xml,%3Csvg width='600' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100%25' height='100%25' fill='%23333'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='monospace' font-size='14' fill='white'%3EMISSING FILE%3C/text%3E%3C/svg%3E";
+            }
+
+            // Update Text
+            const textP = modalText.querySelector('p');
+            if (textP) textP.innerText = doc.text || "No transcription available.";
+
+            // Update Caption
+            modalCap.innerHTML = `ARCHIVED DOCUMENT: ${mission.title} (${activeDocIndex + 1}/${mission.docIds.length})`;
+
+            // Update Navigation Buttons
+            if (mission.docIds.length > 1) {
+                btnPrev.classList.remove('hidden');
+                btnNext.classList.remove('hidden');
+
+                // Optional: Disable buttons at ends if not looping
+                btnPrev.disabled = activeDocIndex === 0;
+                btnNext.disabled = activeDocIndex === mission.docIds.length - 1;
+                btnPrev.style.opacity = activeDocIndex === 0 ? '0.3' : '1';
+                btnNext.style.opacity = activeDocIndex === mission.docIds.length - 1 ? '0.3' : '1';
+            } else {
+                btnPrev.classList.add('hidden');
+                btnNext.classList.add('hidden');
+            }
+        }
+
+        // Navigation Handlers
+        btnPrev.onclick = (e) => {
+            e.stopPropagation();
+            if (activeDocIndex > 0) {
+                activeDocIndex--;
+                updateModalContent();
+            }
+        };
+
+        btnNext.onclick = (e) => {
+            e.stopPropagation();
+            const mission = missionData[activeMissionIndex];
+            if (activeDocIndex < mission.docIds.length - 1) {
+                activeDocIndex++;
+                updateModalContent();
+            }
+        };
+
+        function showImageMode() {
+            modalImg.style.display = 'block';
+            modalText.style.display = 'none';
+            modalToggle.innerText = "READ TRANSCRIPTION";
+            modalToggle.classList.remove('bg-red-700');
+            modalToggle.classList.add('bg-gray-700');
+        }
+
+        function showTextMode() {
+            modalImg.style.display = 'none';
+            modalText.style.display = 'block';
+            modalToggle.innerText = "VIEW ORIGINAL";
+            modalToggle.classList.remove('bg-gray-700');
+            modalToggle.classList.add('bg-red-700');
+        }
+
+        modalToggle.onclick = function () {
+            if (modalImg.style.display !== 'none') {
+                showTextMode();
+            } else {
+                showImageMode();
+            }
+        }
+
+        document.querySelector('.close-btn').onclick = () => modal.style.display = "none";
+        window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; }
+
+        // --- GAMIFICATION LOGIC ---
+        const collectedBadges = new Set();
+
+        function unlockBadge(badge) {
+            if (collectedBadges.has(badge.id)) return;
+
+            collectedBadges.add(badge.id);
+
+            // Update UI Counter
+            document.getElementById('badge-count').innerText = collectedBadges.size;
+
+            // Add to Panel
+            const container = document.getElementById('badges-container');
+            const badgeEl = document.createElement('div');
+            badgeEl.className = "flex flex-col items-center p-2 bg-white rounded border border-gray-300 shadow-sm";
+            badgeEl.innerHTML = `
+                <div class="text-2xl mb-1">${badge.icon}</div>
+                <div class="text-[8px] font-bold uppercase text-center leading-tight text-gray-800">${badge.name}</div>
+            `;
+            container.appendChild(badgeEl);
+
+            // Show Notification
+            const notif = document.getElementById('badge-notification');
+            document.getElementById('notification-text').innerText = badge.desc;
+            notif.classList.remove('hidden');
+            notif.classList.add('animate-bounce');
+
+            setTimeout(() => {
+                notif.classList.add('hidden');
+                notif.classList.remove('animate-bounce');
+            }, 4000);
+        }
+
+        // Toggle Service Record Panel
+        const serviceTrigger = document.getElementById('service-record-trigger');
+        const servicePanel = document.getElementById('service-record-panel');
+
+        serviceTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            servicePanel.classList.toggle('hidden');
+        });
+
+        // Close panel when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!servicePanel.contains(e.target) && !serviceTrigger.contains(e.target)) {
+                servicePanel.classList.add('hidden');
+            }
+        });
+
+        // Toggle Secret Intel
+        window.toggleSecret = function (index) {
+            const el = document.getElementById(`secret-${index}`);
+            el.classList.toggle('hidden');
+        }
+
+        // --- NAVIGATION ---
+        document.getElementById('btn-next').addEventListener('click', () => {
+            if (currentStep < missionData.length - 1) loadStep(++currentStep);
+        });
+        document.getElementById('btn-prev').addEventListener('click', () => {
+            if (currentStep > 0) loadStep(--currentStep);
+        });
+
+        // --- TABS LOGIC ---
+        function switchTab(tab) {
+            const missionContent = document.getElementById('mission-log-content');
+            const archivesContent = document.getElementById('archives-content');
+            const tabMission = document.getElementById('tab-mission');
+            const tabArchives = document.getElementById('tab-archives');
+
+            if (tab === 'mission') {
+                missionContent.classList.remove('hidden');
+                archivesContent.classList.add('hidden');
+
+                tabMission.classList.remove('bg-[#1a1a1a]', 'text-gray-500', 'shadow-inner');
+                tabMission.classList.add('bg-[#d4c5a3]', 'text-[#3f3f3f]', 'shadow-md');
+
+                tabArchives.classList.add('bg-[#1a1a1a]', 'text-gray-500', 'shadow-inner');
+                tabArchives.classList.remove('bg-[#d4c5a3]', 'text-[#3f3f3f]', 'shadow-md');
+            } else {
+                missionContent.classList.add('hidden');
+                archivesContent.classList.remove('hidden');
+
+                tabMission.classList.add('bg-[#1a1a1a]', 'text-gray-500', 'shadow-inner');
+                tabMission.classList.remove('bg-[#d4c5a3]', 'text-[#3f3f3f]', 'shadow-md');
+
+                tabArchives.classList.remove('bg-[#1a1a1a]', 'text-gray-500', 'shadow-inner');
+                tabArchives.classList.add('bg-[#d4c5a3]', 'text-[#3f3f3f]', 'shadow-md');
+            }
+        }
+
+        // --- ARCHIVES LOGIC ---
+        function populateArchives() {
+            const grid = document.getElementById('archives-grid');
+            grid.innerHTML = '';
+
+            journalRegistry.forEach((doc) => {
+                const item = document.createElement('div');
+                item.className = "cursor-pointer group relative aspect-[3/4] bg-black border border-gray-400 shadow-sm hover:shadow-md transition-all hover:scale-105";
+                item.onclick = () => openArchiveModal(doc.id);
+
+                item.innerHTML = `
+                    <img src="${doc.src}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="Archive Document">
+                    <div class="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[8px] p-1 truncate typewriter border-t border-gray-600">
+                        ${doc.id}
+                    </div>
+                `;
+                grid.appendChild(item);
+            });
+        }
+
+        // --- START ---
+        initMap();
+        populateArchives();
+
+    </script>
+    <style>
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: slideIn 0.4s ease-out forwards;
+        }
+    </style>
+</body>
+
+</html>
