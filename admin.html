@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operation: Grandfather - Reading Editor</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23111'/%3E%3Cpath d='M18 18h28v28H18z' fill='none' stroke='%23dfb48a' stroke-width='4'/%3E%3Cpath d='M24 26h16M24 34h16M24 42h10' stroke='%23b03a2e' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #111315;
+            --panel: #181c20;
+            --panel-alt: #f1eadb;
+            --ink: #f5f0e6;
+            --muted: #9da6af;
+            --accent: #b03a2e;
+            --accent-soft: #dfb48a;
+            --border: #30363d;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top left, rgba(176, 58, 46, 0.18), transparent 30%),
+                radial-gradient(circle at bottom right, rgba(223, 180, 138, 0.12), transparent 35%),
+                var(--bg);
+            color: var(--ink);
+            font-family: "Source Serif 4", serif;
+        }
+
+        .shell {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .title-block h1 {
+            margin: 0;
+            font-family: "Special Elite", cursive;
+            font-size: 2rem;
+            color: var(--accent-soft);
+        }
+
+        .title-block p,
+        .status-line,
+        .meta,
+        .button,
+        select,
+        textarea,
+        .ocr-pane {
+            font-family: "IBM Plex Mono", monospace;
+        }
+
+        .title-block p {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .button,
+        select,
+        .file-label {
+            border: 1px solid var(--border);
+            background: var(--panel);
+            color: var(--ink);
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            text-decoration: none;
+        }
+
+        .button,
+        .file-label {
+            cursor: pointer;
+        }
+
+        .button:hover,
+        .file-label:hover,
+        select:hover {
+            border-color: var(--accent-soft);
+        }
+
+        .button.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .button.secondary {
+            background: #222830;
+        }
+
+        .button.warning {
+            background: #4d1f18;
+            border-color: #7f3126;
+        }
+
+        #importFile {
+            display: none;
+        }
+
+        .status-line {
+            margin-bottom: 16px;
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+
+        .meta {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .meta-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px;
+        }
+
+        .meta-card .label {
+            color: var(--muted);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            margin-bottom: 6px;
+        }
+
+        .meta-card .value {
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: minmax(320px, 0.95fr) minmax(260px, 0.85fr) minmax(360px, 1fr);
+            gap: 16px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 70vh;
+        }
+
+        .panel-header {
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-header .eyebrow {
+            color: var(--muted);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            margin-bottom: 6px;
+        }
+
+        .panel-header strong {
+            font-size: 1rem;
+        }
+
+        .image-wrap {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            background: #0d0f11;
+        }
+
+        .image-wrap img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+        }
+
+        .ocr-pane,
+        textarea {
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            border: 0;
+            margin: 0;
+            padding: 16px;
+            resize: none;
+            line-height: 1.5;
+            font-size: 0.84rem;
+            white-space: pre-wrap;
+            overflow: auto;
+        }
+
+        .ocr-pane {
+            background: #101419;
+            color: #dce5ef;
+        }
+
+        textarea {
+            background: var(--panel-alt);
+            color: #1f1b17;
+        }
+
+        .editor-actions {
+            display: flex;
+            gap: 10px;
+            padding: 12px 16px 16px;
+            border-top: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        @media (max-width: 1180px) {
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+
+            .panel {
+                min-height: 45vh;
+            }
+
+            .meta {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 720px) {
+            .shell {
+                padding: 16px;
+            }
+
+            .topbar {
+                flex-direction: column;
+            }
+
+            .toolbar {
+                justify-content: flex-start;
+            }
+
+            .meta {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="shell">
+        <div class="topbar">
+            <div class="title-block">
+                <h1>Reading Editor</h1>
+                <p>Scan-by-scan review workspace for the source archive. The original scan, local OCR, and editable clean reading are kept side by side. Saves persist in this browser and can be exported as JSON.</p>
+            </div>
+            <div class="toolbar">
+                <a class="button secondary" href="index.html">Open Story Map</a>
+                <button id="prevBtn" class="button secondary" type="button">Prev Scan</button>
+                <select id="scanSelect" aria-label="Choose scan"></select>
+                <button id="nextBtn" class="button secondary" type="button">Next Scan</button>
+                <button id="saveBtn" class="button primary" type="button">Save Current</button>
+                <button id="exportMergedBtn" class="button secondary" type="button">Export story-data.js</button>
+                <button id="exportBtn" class="button secondary" type="button">Export JSON</button>
+                <label class="file-label" for="importFile">Import JSON</label>
+                <input id="importFile" type="file" accept="application/json">
+            </div>
+        </div>
+
+        <div id="statusLine" class="status-line">Ready.</div>
+
+        <div class="meta">
+            <div class="meta-card">
+                <div class="label">Scan</div>
+                <div id="metaScan" class="value"></div>
+            </div>
+            <div class="meta-card">
+                <div class="label">Legacy Id</div>
+                <div id="metaLegacy" class="value"></div>
+            </div>
+            <div class="meta-card">
+                <div class="label">Title</div>
+                <div id="metaTitle" class="value"></div>
+            </div>
+            <div class="meta-card">
+                <div class="label">Summary</div>
+                <div id="metaSummary" class="value"></div>
+            </div>
+        </div>
+
+        <div class="workspace">
+            <section class="panel">
+                <div class="panel-header">
+                    <div class="eyebrow">Original Scan</div>
+                    <strong id="imageHeader"></strong>
+                </div>
+                <div class="image-wrap">
+                    <img id="scanImage" alt="">
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-header">
+                    <div class="eyebrow">OCR From Image</div>
+                    <strong>Reference Only</strong>
+                </div>
+                <pre id="ocrText" class="ocr-pane"></pre>
+            </section>
+
+            <section class="panel">
+                <div class="panel-header">
+                    <div class="eyebrow">Clean Reading</div>
+                    <strong>Editable Saved Text</strong>
+                </div>
+                <textarea id="cleanReading" spellcheck="false"></textarea>
+                <div class="editor-actions">
+                    <button id="resetBtn" class="button warning" type="button">Reset Current</button>
+                    <button id="saveNextBtn" class="button primary" type="button">Save + Next</button>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="story-data.js"></script>
+    <script src="ocr-data.js"></script>
+    <script src="reading-overrides.js"></script>
+    <script>
+        const baseDocuments = window.STORY_DATA.documents;
+        let overrides = window.ReadingOverrides.load();
+        let currentIndex = 0;
+        let isDirty = false;
+
+        const scanSelect = document.getElementById('scanSelect');
+        const statusLine = document.getElementById('statusLine');
+        const scanImage = document.getElementById('scanImage');
+        const ocrText = document.getElementById('ocrText');
+        const cleanReading = document.getElementById('cleanReading');
+        const metaScan = document.getElementById('metaScan');
+        const metaLegacy = document.getElementById('metaLegacy');
+        const metaTitle = document.getElementById('metaTitle');
+        const metaSummary = document.getElementById('metaSummary');
+        const imageHeader = document.getElementById('imageHeader');
+
+        function downloadText(filename, content, type = 'text/plain') {
+            const blob = new Blob([content], { type });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function currentDocument() {
+            return baseDocuments[currentIndex];
+        }
+
+        function currentReading(doc) {
+            return Object.prototype.hasOwnProperty.call(overrides, doc.id)
+                ? overrides[doc.id]
+                : doc.transcription;
+        }
+
+        function setStatus(message) {
+            statusLine.textContent = message;
+        }
+
+        function populateSelect() {
+            scanSelect.innerHTML = '';
+            baseDocuments.forEach((doc, index) => {
+                const option = document.createElement('option');
+                option.value = String(index);
+                option.textContent = `Scan ${doc.pageNumber} - ${doc.title}`;
+                scanSelect.appendChild(option);
+            });
+        }
+
+        function render() {
+            const doc = currentDocument();
+            const ocrEntry = window.OCR_DATA[doc.id];
+
+            scanSelect.value = String(currentIndex);
+            metaScan.textContent = `Scan ${doc.pageNumber}`;
+            metaLegacy.textContent = doc.legacyId;
+            metaTitle.textContent = doc.title;
+            metaSummary.textContent = doc.summary;
+            imageHeader.textContent = doc.file.split('/').pop();
+            scanImage.src = doc.file;
+            scanImage.alt = doc.title;
+            ocrText.textContent = ocrEntry && ocrEntry.text ? ocrEntry.text : 'No OCR available.';
+            cleanReading.value = currentReading(doc);
+            isDirty = false;
+            setStatus(`Viewing Scan ${doc.pageNumber}. Saved overrides in browser: ${Object.keys(overrides).length}.`);
+        }
+
+        function saveCurrent() {
+            const doc = currentDocument();
+            const nextValue = cleanReading.value;
+
+            if (nextValue === doc.transcription) {
+                delete overrides[doc.id];
+            } else {
+                overrides[doc.id] = nextValue;
+            }
+
+            window.ReadingOverrides.save(overrides);
+            isDirty = false;
+            setStatus(`Saved Scan ${doc.pageNumber}. Overrides stored in this browser.`);
+        }
+
+        function maybeSaveCurrent() {
+            if (isDirty) {
+                saveCurrent();
+            }
+        }
+
+        function buildMergedStoryDataSource() {
+            const mergedDocuments = baseDocuments.map((doc) => ({
+                ...doc,
+                transcription: currentReading(doc)
+            }));
+
+            const merged = {
+                ...window.STORY_DATA,
+                documents: mergedDocuments
+            };
+
+            return `window.STORY_DATA = ${JSON.stringify(merged, null, 2)};\n`;
+        }
+
+        function goTo(index) {
+            maybeSaveCurrent();
+            currentIndex = Math.max(0, Math.min(index, baseDocuments.length - 1));
+            render();
+        }
+
+        document.getElementById('prevBtn').addEventListener('click', () => goTo(currentIndex - 1));
+        document.getElementById('nextBtn').addEventListener('click', () => goTo(currentIndex + 1));
+        document.getElementById('saveBtn').addEventListener('click', saveCurrent);
+        document.getElementById('exportMergedBtn').addEventListener('click', () => {
+            maybeSaveCurrent();
+            downloadText('story-data.js', buildMergedStoryDataSource(), 'application/javascript');
+            setStatus('Exported merged story-data.js with current overrides applied.');
+        });
+        document.getElementById('saveNextBtn').addEventListener('click', () => {
+            saveCurrent();
+            goTo(currentIndex + 1);
+        });
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            const doc = currentDocument();
+            delete overrides[doc.id];
+            window.ReadingOverrides.save(overrides);
+            render();
+            setStatus(`Reset Scan ${doc.pageNumber} back to the base clean reading.`);
+        });
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            window.ReadingOverrides.download(overrides, 'grandpa-reading-overrides.json');
+            setStatus('Exported reading overrides JSON.');
+        });
+        document.getElementById('importFile').addEventListener('change', async (event) => {
+            const [file] = event.target.files;
+            if (!file) return;
+
+            try {
+                const imported = JSON.parse(await file.text());
+                overrides = imported && typeof imported === 'object' ? imported : {};
+                window.ReadingOverrides.save(overrides);
+                render();
+                setStatus(`Imported overrides from ${file.name}.`);
+            } catch {
+                setStatus('Import failed: invalid JSON file.');
+            } finally {
+                event.target.value = '';
+            }
+        });
+
+        scanSelect.addEventListener('change', (event) => {
+            goTo(Number(event.target.value));
+        });
+
+        cleanReading.addEventListener('input', () => {
+            isDirty = true;
+            setStatus(`Editing Scan ${currentDocument().pageNumber}. Changes not saved yet.`);
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
+                event.preventDefault();
+                saveCurrent();
+            }
+        });
+
+        window.addEventListener('beforeunload', (event) => {
+            if (!isDirty) return;
+            event.preventDefault();
+            event.returnValue = '';
+        });
+
+        populateSelect();
+        render();
+    </script>
+</body>
+
+</html>

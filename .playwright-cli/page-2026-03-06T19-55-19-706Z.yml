@@ -1,0 +1,180 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]: Confidential
+      - generic [ref=e5]:
+        - 'heading "Operation: Grandfather" [level=1] [ref=e6]'
+        - paragraph [ref=e7]: 135th Evacuation Hospital // 1943-1946
+      - button "Watch Film Version" [ref=e8] [cursor=pointer]
+    - generic [ref=e10] [cursor=pointer]:
+      - generic [ref=e11]:
+        - generic [ref=e12]: Service Record
+        - generic [ref=e13]: 0 / 4 Milestones
+      - img [ref=e15]
+  - main [ref=e17]:
+    - generic [ref=e18]:
+      - generic [ref=e19]:
+        - button "Story Map" [ref=e20] [cursor=pointer]
+        - button "Source Archive" [active] [ref=e21] [cursor=pointer]
+        - button "Film Version" [ref=e22] [cursor=pointer]
+      - generic [ref=e121]:
+        - generic [ref=e122]:
+          - heading "SOURCE ARCHIVE" [level=2] [ref=e123]
+          - paragraph [ref=e124]: Curated journal pages and supporting images.
+        - generic [ref=e125]:
+          - generic [ref=e126] [cursor=pointer]:
+            - img "Induction at Fort MacArthur" [ref=e127]
+            - generic [ref=e128]:
+              - generic [ref=e129]: Scan 1
+              - generic [ref=e130]: Induction at Fort MacArthur
+              - generic [ref=e131]: IMG_0524
+          - generic [ref=e132] [cursor=pointer]:
+            - img "Police Work and the Train to Texas" [ref=e133]
+            - generic [ref=e134]:
+              - generic [ref=e135]: Scan 2
+              - generic [ref=e136]: Police Work and the Train to Texas
+              - generic [ref=e137]: IMG_0525
+          - generic [ref=e138] [cursor=pointer]:
+            - img "Keeping the Barracks Clean" [ref=e139]
+            - generic [ref=e140]:
+              - generic [ref=e141]: Scan 3
+              - generic [ref=e142]: Keeping the Barracks Clean
+              - generic [ref=e143]: IMG_0526
+          - generic [ref=e144] [cursor=pointer]:
+            - img "Basic Training Under Live Fire" [ref=e145]
+            - generic [ref=e146]:
+              - generic [ref=e147]: Scan 4
+              - generic [ref=e148]: Basic Training Under Live Fire
+              - generic [ref=e149]: IMG_0527
+          - generic [ref=e150] [cursor=pointer]:
+            - img "The Medical Decision" [ref=e151]
+            - generic [ref=e152]:
+              - generic [ref=e153]: Scan 5
+              - generic [ref=e154]: The Medical Decision
+              - generic [ref=e155]: IMG_0528
+          - generic [ref=e156] [cursor=pointer]:
+            - img "Training at O'Reilly General Hospital" [ref=e157]
+            - generic [ref=e158]:
+              - generic [ref=e159]: Scan 6
+              - generic [ref=e160]: Training at O'Reilly General Hospital
+              - generic [ref=e161]: IMG_0529
+          - generic [ref=e162] [cursor=pointer]:
+            - img "Back to Barkeley, Then Camp Beale" [ref=e163]
+            - generic [ref=e164]:
+              - generic [ref=e165]: Scan 7
+              - generic [ref=e166]: Back to Barkeley, Then Camp Beale
+              - generic [ref=e167]: IMG_0530
+          - generic [ref=e168] [cursor=pointer]:
+            - img "Forming the 135th Evacuation Hospital" [ref=e169]
+            - generic [ref=e170]:
+              - generic [ref=e171]: Scan 8
+              - generic [ref=e172]: Forming the 135th Evacuation Hospital
+              - generic [ref=e173]: IMG_0531
+          - generic [ref=e174] [cursor=pointer]:
+            - img "Captain's Office and Motor Pool Transfer" [ref=e175]
+            - generic [ref=e176]:
+              - generic [ref=e177]: Scan 9
+              - generic [ref=e178]: Captain's Office and Motor Pool Transfer
+              - generic [ref=e179]: IMG_0532
+          - generic [ref=e180] [cursor=pointer]:
+            - img "Fort Dix and the Convoy Departure" [ref=e181]
+            - generic [ref=e182]:
+              - generic [ref=e183]: Scan 10
+              - generic [ref=e184]: Fort Dix and the Convoy Departure
+              - generic [ref=e185]: IMG_0533
+          - generic [ref=e186] [cursor=pointer]:
+            - img "Collision in the Fog" [ref=e187]
+            - generic [ref=e188]:
+              - generic [ref=e189]: Scan 11
+              - generic [ref=e190]: Collision in the Fog
+              - generic [ref=e191]: IMG_0534
+          - generic [ref=e192] [cursor=pointer]:
+            - 'img "After the Collision: Southampton and France" [ref=e193]'
+            - generic [ref=e194]:
+              - generic [ref=e195]: Scan 12
+              - generic [ref=e196]: "After the Collision: Southampton and France"
+              - generic [ref=e197]: IMG_0535
+          - generic [ref=e198] [cursor=pointer]:
+            - img "France to Germany, Then Hambourne" [ref=e199]
+            - generic [ref=e200]:
+              - generic [ref=e201]: Scan 13
+              - generic [ref=e202]: France to Germany, Then Hambourne
+              - generic [ref=e203]: IMG_0536
+          - generic [ref=e204] [cursor=pointer]:
+            - img "Occupation Duty and the Paris Supply Run" [ref=e205]
+            - generic [ref=e206]:
+              - generic [ref=e207]: Scan 14
+              - generic [ref=e208]: Occupation Duty and the Paris Supply Run
+              - generic [ref=e209]: IMG_0537
+          - generic [ref=e210] [cursor=pointer]:
+            - img "Lyon, Marseille, and Redeployment Orders" [ref=e211]
+            - generic [ref=e212]:
+              - generic [ref=e213]: Scan 15
+              - generic [ref=e214]: Lyon, Marseille, and Redeployment Orders
+              - generic [ref=e215]: IMG_0538
+          - generic [ref=e216] [cursor=pointer]:
+            - img "Point System and the North Atlantic Storm" [ref=e217]
+            - generic [ref=e218]:
+              - generic [ref=e219]: Scan 16
+              - generic [ref=e220]: Point System and the North Atlantic Storm
+              - generic [ref=e221]: IMG_0539
+          - generic [ref=e222] [cursor=pointer]:
+            - img "Homecoming and Discharge" [ref=e223]
+            - generic [ref=e224]:
+              - generic [ref=e225]: Scan 17
+              - generic [ref=e226]: Homecoming and Discharge
+              - generic [ref=e227]: IMG_0540
+    - generic [ref=e60]:
+      - generic [ref=e61]:
+        - generic:
+          - generic:
+            - img
+          - generic:
+            - button "1" [ref=e66] [cursor=pointer]:
+              - generic [ref=e67]: "1"
+            - button "2" [ref=e68] [cursor=pointer]:
+              - generic [ref=e69]: "2"
+            - button "3" [ref=e70] [cursor=pointer]:
+              - generic [ref=e71]: "3"
+            - button "4" [ref=e72] [cursor=pointer]:
+              - generic [ref=e73]: "4"
+            - button "5" [ref=e74] [cursor=pointer]:
+              - generic [ref=e75]: "5"
+            - button "6" [ref=e76] [cursor=pointer]:
+              - generic [ref=e77]: "6"
+            - button "7" [ref=e78] [cursor=pointer]:
+              - generic [ref=e79]: "7"
+            - button "8" [ref=e80] [cursor=pointer]:
+              - generic [ref=e81]: "8"
+            - button "9" [ref=e82] [cursor=pointer]:
+              - generic [ref=e83]: "9"
+            - button "10" [ref=e84] [cursor=pointer]:
+              - generic [ref=e85]: "10"
+            - button "11" [ref=e86] [cursor=pointer]:
+              - generic [ref=e87]: "11"
+            - button "12" [ref=e88] [cursor=pointer]:
+              - generic [ref=e89]: "12"
+            - button "13" [ref=e90] [cursor=pointer]:
+              - generic [ref=e91]: "13"
+            - button "14" [ref=e92] [cursor=pointer]:
+              - generic [ref=e93]: "14"
+            - button "15" [ref=e94] [cursor=pointer]:
+              - generic [ref=e95]: "15"
+            - button "16" [ref=e96] [cursor=pointer]:
+              - generic [ref=e97]: "16"
+        - generic:
+          - generic [ref=e98]:
+            - button "Zoom in" [ref=e99] [cursor=pointer]: +
+            - button "Zoom out" [ref=e100] [cursor=pointer]: −
+          - generic [ref=e101]:
+            - link "Leaflet" [ref=e102] [cursor=pointer]:
+              - /url: https://leafletjs.com
+              - img [ref=e103]
+              - text: Leaflet
+            - text: "| © OpenStreetMap, © CARTO"
+      - generic [ref=e107]:
+        - heading "LEGEND" [level=4] [ref=e108]
+        - generic [ref=e111]: Active Location
+        - generic [ref=e114]: Deployment Route
+        - generic [ref=e117]: Supply Run
+        - generic [ref=e120]: Return Home

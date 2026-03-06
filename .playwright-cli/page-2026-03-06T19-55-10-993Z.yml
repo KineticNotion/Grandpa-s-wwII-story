@@ -1,0 +1,108 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]: Confidential
+      - generic [ref=e5]:
+        - 'heading "Operation: Grandfather" [level=1] [ref=e6]'
+        - paragraph [ref=e7]: 135th Evacuation Hospital // 1943-1946
+      - button "Watch Film Version" [ref=e8] [cursor=pointer]
+    - generic [ref=e10] [cursor=pointer]:
+      - generic [ref=e11]:
+        - generic [ref=e12]: Service Record
+        - generic [ref=e13]: 0 / 4 Milestones
+      - img [ref=e15]
+  - main [ref=e17]:
+    - generic [ref=e18]:
+      - generic [ref=e19]:
+        - button "Story Map" [ref=e20] [cursor=pointer]
+        - button "Source Archive" [ref=e21] [cursor=pointer]
+        - button "Film Version" [ref=e22] [cursor=pointer]
+      - generic [ref=e24]:
+        - generic [ref=e25]:
+          - button "PREV" [disabled] [ref=e26]
+          - generic [ref=e27]:
+            - text: 1 / 16
+            - generic [ref=e28]: Story Step
+          - button "NEXT STEP" [ref=e29] [cursor=pointer]
+        - generic [ref=e31]:
+          - generic [ref=e32]:
+            - generic [ref=e33]: Act I
+            - generic [ref=e34]:
+              - heading "Training the Medic" [level=3] [ref=e35]
+              - paragraph [ref=e36]: From induction in Los Angeles through the long apprenticeship that turned a draftee into a field hospital soldier.
+          - generic [ref=e37]:
+            - generic [ref=e38]:
+              - generic [ref=e39]: Act I // Step 1
+              - heading "Induction and Basic Training" [level=2] [ref=e40]
+              - generic [ref=e41]: "DATE: October 1943 to early 1944"
+            - button "Open Source Page" [ref=e42] [cursor=pointer]
+          - generic [ref=e43]:
+            - generic [ref=e44]: Exact Manuscript Excerpt
+            - paragraph [ref=e45]: "\"We also did night problems where you would be in a trench and you had to come out of the trench and creep and crawl across a field and they would fire live ammunition over the top of you.\""
+          - generic [ref=e46]:
+            - generic [ref=e47]: Narrative Bridge
+            - paragraph [ref=e48]: "The manuscript opens with the sudden compression of Army life: induction, barracks discipline, then field training severe enough to strip away any illusion that service would stay abstract or ceremonial."
+          - generic [ref=e49]:
+            - generic [ref=e50]: Archivist's Note
+            - paragraph [ref=e51]: Camp Barkeley near Abilene was a major wartime training center. The Texas weather, temporary barracks, and live-fire exercises in the manuscript match the kind of accelerated preparation the Army used for wartime mobilization.
+          - generic [ref=e52]:
+            - generic [ref=e53]: Provenance
+            - paragraph [ref=e54]: "Source: Scan 3, supported by Scans 1-3 (legacy IMG_0526; related IMG_0524-IMG_0526)"
+            - paragraph [ref=e55]: "Primary scan: Scan 3 - Keeping the Barracks Clean"
+            - paragraph [ref=e56]: "Related scans: Scan 1, Scan 2, Scan 3"
+            - paragraph [ref=e57]: Page 1 anchors the induction date at October 7, 1943, with reporting to Fort MacArthur on October 23, 1943.
+        - paragraph [ref=e59]: Declassified for Educational Use
+    - generic [ref=e60]:
+      - generic [ref=e61]:
+        - generic:
+          - generic:
+            - img
+          - generic:
+            - button "1" [ref=e66] [cursor=pointer]:
+              - generic [ref=e67]: "1"
+            - button "2" [ref=e68] [cursor=pointer]:
+              - generic [ref=e69]: "2"
+            - button "3" [ref=e70] [cursor=pointer]:
+              - generic [ref=e71]: "3"
+            - button "4" [ref=e72] [cursor=pointer]:
+              - generic [ref=e73]: "4"
+            - button "5" [ref=e74] [cursor=pointer]:
+              - generic [ref=e75]: "5"
+            - button "6" [ref=e76] [cursor=pointer]:
+              - generic [ref=e77]: "6"
+            - button "7" [ref=e78] [cursor=pointer]:
+              - generic [ref=e79]: "7"
+            - button "8" [ref=e80] [cursor=pointer]:
+              - generic [ref=e81]: "8"
+            - button "9" [ref=e82] [cursor=pointer]:
+              - generic [ref=e83]: "9"
+            - button "10" [ref=e84] [cursor=pointer]:
+              - generic [ref=e85]: "10"
+            - button "11" [ref=e86] [cursor=pointer]:
+              - generic [ref=e87]: "11"
+            - button "12" [ref=e88] [cursor=pointer]:
+              - generic [ref=e89]: "12"
+            - button "13" [ref=e90] [cursor=pointer]:
+              - generic [ref=e91]: "13"
+            - button "14" [ref=e92] [cursor=pointer]:
+              - generic [ref=e93]: "14"
+            - button "15" [ref=e94] [cursor=pointer]:
+              - generic [ref=e95]: "15"
+            - button "16" [ref=e96] [cursor=pointer]:
+              - generic [ref=e97]: "16"
+        - generic:
+          - generic [ref=e98]:
+            - button "Zoom in" [ref=e99] [cursor=pointer]: +
+            - button "Zoom out" [ref=e100] [cursor=pointer]: −
+          - generic [ref=e101]:
+            - link "Leaflet" [ref=e102] [cursor=pointer]:
+              - /url: https://leafletjs.com
+              - img [ref=e103]
+              - text: Leaflet
+            - text: "| © OpenStreetMap, © CARTO"
+      - generic [ref=e107]:
+        - heading "LEGEND" [level=4] [ref=e108]
+        - generic [ref=e111]: Active Location
+        - generic [ref=e114]: Deployment Route
+        - generic [ref=e117]: Supply Run
+        - generic [ref=e120]: Return Home
